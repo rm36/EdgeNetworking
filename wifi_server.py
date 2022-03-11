@@ -1,9 +1,10 @@
 import socket
 import picar_4wd as car
 import time
+from gpiozero import CPUTemperature
 from enum import Enum
 
-HOST = "192.168.86.165" # IP address of your Raspberry PI
+HOST = "192.168.107.241" # IP address of your Raspberry PI
 PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
 
 DISTANCE_PER_SECOND = 28 # cm / s
@@ -46,6 +47,13 @@ def get_speed(move):
     elif move == Movement.BACKWARD:
         speed = -DISTANCE_PER_SECOND
     return speed
+
+def get_temperature():
+    pi_temp = CPUTemperature() #create a CPUTemperature object
+    temp_celsius = float(pi_temp.temperature)
+    #temp_fahr = (temp_celsius * (9/5)) + 32
+    return temp_celsius
+    
 
 def get_direction_string(direction):
     # Get direction between -180 and 180
@@ -106,7 +114,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print(data)
             
             speed = get_speed(move)
-            temp = 25 # deg
+            temp = get_temperature()
             direction_str = get_direction_string(direction)
             response = "%s,%d cm/s,%.2f cm,%.2f C" % (direction_str, speed, distance, temp)
 
